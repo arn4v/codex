@@ -14,7 +14,6 @@ use codex_protocol::config_types::WindowsSandboxLevel;
 use codex_protocol::models::VIEW_IMAGE_TOOL_NAME;
 use codex_protocol::openai_models::InputModality;
 use codex_protocol::openai_models::ModelInfo;
-use codex_protocol::openai_models::ModelsResponse;
 use codex_protocol::protocol::SandboxPolicy;
 use codex_protocol::protocol::SessionSource;
 use codex_protocol::protocol::SubAgentSource;
@@ -252,8 +251,7 @@ fn strip_descriptions_tool(spec: &mut ToolSpec) {
 
 fn model_info_from_models_json(slug: &str) -> ModelInfo {
     let config = test_config();
-    let response: ModelsResponse =
-        serde_json::from_str(include_str!("../../models.json")).expect("valid models.json");
+    let response = codex_models_manager::bundled_models_response();
     let model = response
         .models
         .into_iter()

@@ -491,9 +491,7 @@ impl ModelsManager {
     }
 
     fn load_remote_models_from_file() -> Result<Vec<ModelInfo>, std::io::Error> {
-        let file_contents = include_str!("../models.json");
-        let response: ModelsResponse = serde_json::from_str(file_contents)?;
-        Ok(response.models)
+        Ok(crate::bundled_models_response().models)
     }
 
     /// Attempt to satisfy the refresh from the cache when it matches the provider and TTL.

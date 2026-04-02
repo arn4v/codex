@@ -974,8 +974,7 @@ async fn wait_for_model_available(manager: &Arc<ModelsManager>, slug: &str) -> M
 }
 
 fn bundled_model_slug() -> String {
-    let response: ModelsResponse = serde_json::from_str(include_str!("../../models.json"))
-        .expect("bundled models.json should deserialize");
+    let response = codex_models_manager::bundled_models_response();
     response
         .models
         .first()

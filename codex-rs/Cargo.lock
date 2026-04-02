@@ -2751,6 +2751,7 @@ dependencies = [
  "codex-file-search",
  "codex-git-utils",
  "codex-login",
+ "codex-models-manager",
  "codex-otel",
  "codex-protocol",
  "codex-shell-command",

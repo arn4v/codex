@@ -840,9 +840,7 @@ fn build_available_models_picks_default_after_hiding_hidden_models() {
 
 #[test]
 fn bundled_models_json_roundtrips() {
-    let file_contents = include_str!("../models.json");
-    let response: ModelsResponse =
-        serde_json::from_str(file_contents).expect("bundled models.json should deserialize");
+    let response = crate::bundled_models_response();
 
     let serialized =
         serde_json::to_string(&response).expect("bundled models.json should serialize");

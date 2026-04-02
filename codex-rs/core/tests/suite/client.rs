@@ -1636,8 +1636,7 @@ async fn user_turn_explicit_reasoning_summary_overrides_model_catalog_default() 
     )
     .await;
 
-    let mut model_catalog: ModelsResponse =
-        serde_json::from_str(include_str!("../../models.json")).expect("valid models.json");
+    let mut model_catalog = codex_models_manager::bundled_models_response();
     let model = model_catalog
         .models
         .iter_mut()
@@ -1749,8 +1748,7 @@ async fn reasoning_summary_none_overrides_model_catalog_default() -> anyhow::Res
     )
     .await;
 
-    let mut model_catalog: ModelsResponse =
-        serde_json::from_str(include_str!("../../models.json")).expect("valid models.json");
+    let mut model_catalog = codex_models_manager::bundled_models_response();
     let model = model_catalog
         .models
         .iter_mut()
