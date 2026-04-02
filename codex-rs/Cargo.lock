@@ -2345,6 +2345,7 @@ dependencies = [
  "codex-otel",
  "codex-protocol",
  "codex-response-debug-context",
+ "codex-utils-absolute-path",
  "codex-utils-output-truncation",
  "codex-utils-template",
  "core_test_support",
