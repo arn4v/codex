@@ -120,6 +120,7 @@ use codex_protocol::account::PlanType;
 use codex_protocol::approvals::ElicitationRequestEvent;
 use codex_protocol::config_types::CollaborationMode;
 use codex_protocol::config_types::CollaborationModeMask;
+use codex_protocol::config_types::FAST_MODE_AUTO_TOKEN_LIMIT;
 use codex_protocol::config_types::ModeKind;
 use codex_protocol::config_types::Personality;
 use codex_protocol::config_types::ServiceTier;
@@ -5378,16 +5379,21 @@ impl ChatWidget {
                     "on" => self.set_service_tier_selection(Some(ServiceTier::Fast)),
                     "off" => self.set_service_tier_selection(/*service_tier*/ None),
                     "status" => {
-                        let status = if matches!(self.config.service_tier, Some(ServiceTier::Fast))
-                        {
-                            "on"
-                        } else {
-                            "off"
+                        let message = match self.config.service_tier {
+                            Some(ServiceTier::Fast) => "Fast mode override is on.".to_string(),
+                            Some(service_tier) => {
+                                format!("Fast mode is using the `{service_tier}` override.")
+                            }
+                            None => {
+                                let active = self.status_line_total_usage().total_tokens
+                                    < FAST_MODE_AUTO_TOKEN_LIMIT;
+                                format!(
+                                    "Fast mode is automatic, currently {}.",
+                                    if active { "on" } else { "off" }
+                                )
+                            }
                         };
-                        self.add_info_message(
-                            format!("Fast mode is {status}."),
-                            /*hint*/ None,
-                        );
+                        self.add_info_message(message, /*hint*/ None);
                     }
                     _ => {
                         self.add_error_message("Usage: /fast [on|off|status]".to_string());
@@ -9480,6 +9486,26 @@ impl ChatWidget {
         model == FAST_STATUS_MODEL
             && matches!(service_tier, Some(ServiceTier::Fast))
             && self.has_chatgpt_account
+    }
+
+    pub(crate) fn effective_display_service_tier(&self) -> Option<ServiceTier> {
+        self.config
+            .service_tier
+            .or(
+                (self.status_line_total_usage().total_tokens < FAST_MODE_AUTO_TOKEN_LIMIT)
+                    .then_some(ServiceTier::Fast),
+            )
+    }
+
+    fn fast_mode_status_text(&self) -> &'static str {
+        match self.config.service_tier {
+            Some(ServiceTier::Fast) => "Fast on",
+            Some(_) => "Fast off",
+            None if self.status_line_total_usage().total_tokens < FAST_MODE_AUTO_TOKEN_LIMIT => {
+                "Fast auto"
+            }
+            None => "Fast off",
+        }
     }
 
     fn fast_mode_enabled(&self) -> bool {

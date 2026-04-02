@@ -11,6 +11,7 @@ use crate::codex::TurnContext;
 use crate::codex::get_last_assistant_message_from_turn;
 use crate::error::CodexErr;
 use crate::error::Result as CodexResult;
+use crate::service_tier::RequestKind as ServiceTierRequestKind;
 use crate::util::backoff;
 use codex_protocol::items::ContextCompactionItem;
 use codex_protocol::items::TurnItem;
@@ -403,7 +404,8 @@ async fn drain_to_completed(
             &turn_context.session_telemetry,
             turn_context.reasoning_effort,
             turn_context.reasoning_summary,
-            turn_context.config.service_tier,
+            crate::service_tier::resolve(sess, turn_context, ServiceTierRequestKind::Compaction)
+                .await,
             turn_metadata_header,
         )
         .await?;

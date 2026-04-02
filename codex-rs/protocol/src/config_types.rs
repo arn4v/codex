@@ -10,6 +10,10 @@ use ts_rs::TS;
 
 use crate::openai_models::ReasoningEffort;
 
+/// Automatic Fast mode stays enabled only while the estimated conversation
+/// context remains below this token count.
+pub const FAST_MODE_AUTO_TOKEN_LIMIT: i64 = 50_000;
+
 /// A summary of the reasoning performed by the model. This can be useful for
 /// debugging and understanding the model's reasoning process.
 /// See https://platform.openai.com/docs/guides/reasoning?api-mode=responses#reasoning-summaries

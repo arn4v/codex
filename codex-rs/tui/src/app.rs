@@ -4890,8 +4890,12 @@ impl App {
                     .await
                 {
                     Ok(()) => {
-                        let status = if service_tier.is_some() { "on" } else { "off" };
-                        let mut message = format!("Fast mode set to {status}");
+                        let mut message = match service_tier {
+                            Some(service_tier) => {
+                                format!("Fast mode override set to {service_tier}")
+                            }
+                            None => "Fast mode set to automatic".to_string(),
+                        };
                         if let Some(profile) = profile {
                             message.push_str(" for ");
                             message.push_str(profile);

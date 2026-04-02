@@ -13,6 +13,7 @@ use crate::context_manager::estimate_response_item_model_visible_bytes;
 use crate::context_manager::is_codex_generated_item;
 use crate::error::CodexErr;
 use crate::error::Result as CodexResult;
+use crate::service_tier::RequestKind as ServiceTierRequestKind;
 use codex_protocol::items::ContextCompactionItem;
 use codex_protocol::items::TurnItem;
 use codex_protocol::models::BaseInstructions;
@@ -122,6 +123,12 @@ async fn run_remote_compact_task_inner_impl(
             &turn_context.model_info,
             turn_context.reasoning_effort,
             turn_context.reasoning_summary,
+            crate::service_tier::resolve(
+                sess.as_ref(),
+                turn_context.as_ref(),
+                ServiceTierRequestKind::Compaction,
+            )
+            .await,
             &turn_context.session_telemetry,
         )
         .or_else(|err| async {

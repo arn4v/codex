@@ -70,6 +70,7 @@ pub(crate) mod mentions {
 }
 mod sandbox_tags;
 pub mod sandboxing;
+mod service_tier;
 mod session_prefix;
 mod session_startup_prewarm;
 mod shell_detect;

@@ -294,7 +294,7 @@ async fn model_and_personality_change_only_appends_model_instructions() -> Resul
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn service_tier_change_is_applied_on_next_http_turn() -> Result<()> {
+async fn clearing_manual_fast_falls_back_to_auto_on_next_http_turn() -> Result<()> {
     skip_if_no_network!(Ok(()));
 
     let server = start_mock_server().await;
@@ -318,7 +318,58 @@ async fn service_tier_change_is_applied_on_next_http_turn() -> Result<()> {
     let second_body = requests[1].body_json();
 
     assert_eq!(first_body["service_tier"].as_str(), Some("priority"));
+    assert_eq!(second_body["service_tier"].as_str(), Some("priority"));
+
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn auto_fast_is_disabled_once_conversation_reaches_50k_tokens() -> Result<()> {
+    skip_if_no_network!(Ok(()));
+
+    let server = start_mock_server().await;
+    let resp_mock = mount_sse_sequence(
+        &server,
+        vec![
+            sse(vec![ev_completed_with_tokens(
+                "resp-1", /*total_tokens*/ 50_000,
+            )]),
+            sse_completed("resp-2"),
+        ],
+    )
+    .await;
+
+    let test = test_codex().build(&server).await?;
+
+    test.submit_turn("seed turn").await?;
+    test.submit_turn("follow-up turn").await?;
+
+    let requests = resp_mock.requests();
+    assert_eq!(requests.len(), 2, "expected two model requests");
+
+    let first_body = requests[0].body_json();
+    let second_body = requests[1].body_json();
+
+    assert_eq!(first_body["service_tier"].as_str(), Some("priority"));
     assert_eq!(second_body.get("service_tier"), None);
+
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn initial_http_turn_uses_auto_fast_under_50k_tokens() -> Result<()> {
+    skip_if_no_network!(Ok(()));
+
+    let server = start_mock_server().await;
+    let resp_mock = mount_sse_once(&server, sse_completed("resp-1")).await;
+
+    let test = test_codex().build(&server).await?;
+
+    test.submit_turn("auto fast turn").await?;
+
+    let request = resp_mock.single_request();
+    let body = request.body_json();
+    assert_eq!(body["service_tier"].as_str(), Some("priority"));
 
     Ok(())
 }

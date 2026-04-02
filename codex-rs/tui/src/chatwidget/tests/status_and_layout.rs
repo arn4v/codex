@@ -595,8 +595,30 @@ async fn fast_status_indicator_is_hidden_for_non_gpt54_model() {
 async fn fast_status_indicator_is_hidden_when_fast_mode_is_off() {
     let (mut chat, _rx, _op_rx) = make_chatwidget_manual(Some("gpt-5.4")).await;
     set_chatgpt_auth(&mut chat);
+    chat.handle_codex_event(Event {
+        id: "token-usage".into(),
+        msg: EventMsg::TokenCount(TokenCountEvent {
+            info: Some(make_token_info(
+                codex_protocol::config_types::FAST_MODE_AUTO_TOKEN_LIMIT,
+                1_000_000,
+            )),
+            rate_limits: None,
+        }),
+    });
 
-    assert!(!chat.should_show_fast_status(chat.current_model(), chat.current_service_tier(),));
+    assert!(
+        !chat.should_show_fast_status(chat.current_model(), chat.effective_display_service_tier(),)
+    );
+}
+
+#[tokio::test]
+async fn fast_status_indicator_is_shown_in_auto_mode_under_50k_tokens() {
+    let (mut chat, _rx, _op_rx) = make_chatwidget_manual(Some("gpt-5.4")).await;
+    set_chatgpt_auth(&mut chat);
+
+    assert!(
+        chat.should_show_fast_status(chat.current_model(), chat.effective_display_service_tier(),)
+    );
 }
 
 // Snapshot test: ChatWidget at very small heights (idle)
@@ -906,6 +928,19 @@ async fn status_line_fast_mode_renders_on_and_off() {
     let (mut chat, _rx, _op_rx) = make_chatwidget_manual(/*model_override*/ None).await;
     chat.config.tui_status_line = Some(vec!["fast-mode".to_string()]);
 
+    chat.refresh_status_line();
+    assert_eq!(status_line_text(&chat), Some("Fast auto".to_string()));
+
+    chat.handle_codex_event(Event {
+        id: "token-usage".into(),
+        msg: EventMsg::TokenCount(TokenCountEvent {
+            info: Some(make_token_info(
+                codex_protocol::config_types::FAST_MODE_AUTO_TOKEN_LIMIT,
+                1_000_000,
+            )),
+            rate_limits: None,
+        }),
+    });
     chat.refresh_status_line();
     assert_eq!(status_line_text(&chat), Some("Fast off".to_string()));
 

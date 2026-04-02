@@ -36,6 +36,7 @@ use crate::realtime_conversation::handle_start as handle_realtime_conversation_s
 use crate::realtime_conversation::handle_text as handle_realtime_conversation_text;
 use crate::render_skills_section;
 use crate::rollout::session_index;
+use crate::service_tier::RequestKind as ServiceTierRequestKind;
 use crate::session_prefix::format_subagent_notification_message;
 use crate::skills_load_input_from_config;
 use crate::stream_events_utils::HandleOutputCtx;
@@ -7329,7 +7330,12 @@ async fn try_run_sampling_request(
             &turn_context.session_telemetry,
             turn_context.reasoning_effort,
             turn_context.reasoning_summary,
-            turn_context.config.service_tier,
+            crate::service_tier::resolve(
+                sess.as_ref(),
+                turn_context.as_ref(),
+                ServiceTierRequestKind::Turn,
+            )
+            .await,
             turn_metadata_header,
         )
         .instrument(trace_span!("stream_request"))

@@ -14,6 +14,7 @@ use crate::codex::Session;
 use crate::codex::build_prompt;
 use crate::codex::built_tools;
 use crate::error::Result as CodexResult;
+use crate::service_tier::RequestKind as ServiceTierRequestKind;
 use codex_otel::SessionTelemetry;
 use codex_otel::metrics::names::STARTUP_PREWARM_AGE_AT_FIRST_TURN_METRIC;
 use codex_otel::metrics::names::STARTUP_PREWARM_DURATION_METRIC;
@@ -232,7 +233,12 @@ async fn schedule_startup_prewarm_inner(
             &startup_turn_context.session_telemetry,
             startup_turn_context.reasoning_effort,
             startup_turn_context.reasoning_summary,
-            startup_turn_context.config.service_tier,
+            crate::service_tier::resolve(
+                session.as_ref(),
+                startup_turn_context.as_ref(),
+                ServiceTierRequestKind::Turn,
+            )
+            .await,
             startup_turn_metadata_header.as_deref(),
         )
         .await?;

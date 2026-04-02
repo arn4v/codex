@@ -1691,6 +1691,14 @@ async fn auto_compact_runs_after_resume_when_token_usage_is_over_limit() {
         "/v1/responses/compact",
         "remote compaction should hit the compact endpoint"
     );
+    assert_eq!(
+        compact_requests[0]
+            .body_json()
+            .get("service_tier")
+            .and_then(|v| v.as_str()),
+        Some("priority"),
+        "remote compaction should force Fast mode"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

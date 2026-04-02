@@ -352,6 +352,7 @@ impl ModelClient {
         model_info: &ModelInfo,
         effort: Option<ReasoningEffortConfig>,
         summary: ReasoningSummaryConfig,
+        service_tier: Option<ServiceTier>,
         session_telemetry: &SessionTelemetry,
     ) -> Result<Vec<ResponseItem>> {
         if prompt.input.is_empty() {
@@ -395,6 +396,11 @@ impl ModelClient {
             instructions: &instructions,
             tools,
             parallel_tool_calls: prompt.parallel_tool_calls,
+            service_tier: match service_tier {
+                Some(ServiceTier::Fast) => Some("priority".to_string()),
+                Some(service_tier) => Some(service_tier.to_string()),
+                None => None,
+            },
             reasoning,
             text,
         };

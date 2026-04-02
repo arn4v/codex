@@ -272,6 +272,10 @@ async fn remote_compact_replaces_history_for_followups() -> Result<()> {
         compact_body.get("model").and_then(|v| v.as_str()),
         Some(harness.test().session_configured.model.as_str())
     );
+    assert_eq!(
+        compact_body.get("service_tier").and_then(|v| v.as_str()),
+        Some("priority")
+    );
     let response_requests = responses_mock.requests();
     let first_response_request = response_requests.first().expect("initial request missing");
     assert_eq!(

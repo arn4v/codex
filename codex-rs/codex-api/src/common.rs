@@ -28,6 +28,8 @@ pub struct CompactionInput<'a> {
     pub tools: Vec<Value>,
     pub parallel_tool_calls: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub service_tier: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reasoning: Option<Reasoning>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<TextControls>,
