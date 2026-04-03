@@ -2524,7 +2524,7 @@
           "$ref": "#/definitions/ServiceTier"
         }
       ],
-      "description": "Optional explicit service tier preference for new turns (`fast` or `flex`)."
+      "description": "Optional explicit service tier override for new turns (`fast` or `flex`). When unset, request-time automatic Fast mode selection may apply."
     },
     "shell_environment_policy": {
       "allOf": [
